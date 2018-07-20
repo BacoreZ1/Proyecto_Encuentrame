@@ -21,6 +21,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        ///se hizo un cambio
     }
 
     /**
