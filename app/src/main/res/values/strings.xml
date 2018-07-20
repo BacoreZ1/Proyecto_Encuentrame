@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Proyecto_Encuentrame</string>
+    <string name="Contrasena">Contraseña</string>
+    <string name="title_activity_mapa_maps">Map</string>
+</resources>
