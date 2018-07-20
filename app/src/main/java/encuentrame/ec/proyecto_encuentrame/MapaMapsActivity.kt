@@ -22,6 +22,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         ///se hizo un cambio
+
     }
 
     /**
