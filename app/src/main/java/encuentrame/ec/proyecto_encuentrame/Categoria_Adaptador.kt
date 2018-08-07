@@ -17,7 +17,7 @@ class Categoria_Adaptador(var categorias:ArrayList<String>): RecyclerView.Adapte
 
     }
 
-    //public suma ():int publuic intttt
+    //public suma ():int publuic int
 
     //devuelve cuantos elementos devuelve el adaptador
     //numero de elementos que tiene el adaptador*
