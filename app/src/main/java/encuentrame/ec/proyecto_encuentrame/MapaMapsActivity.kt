@@ -2,6 +2,8 @@ package encuentrame.ec.proyecto_encuentrame
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.widget.LinearLayoutManager
+import android.widget.LinearLayout
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -9,10 +11,12 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.android.synthetic.main.activity_mapa_maps.*
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    var categorias= ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +26,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         ///se hizo un cambio
+
+
+        categorias.add("Hoteles")
+        categorias.add("Restaurantes")
+        var adaptador = Categoria_Adaptador(categorias) //creando adaptador con los iteq se realizcen
+        rv_categorias.layoutManager= LinearLayoutManager(this, LinearLayout.HORIZONTAL, false)
+        rv_categorias.adapter= adaptador
+
+
 
     }
 
