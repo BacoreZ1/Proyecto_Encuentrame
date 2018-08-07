@@ -14,7 +14,7 @@ class Categoria_Adaptador(var categorias:ArrayList<String>): RecyclerView.Adapte
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_categoria, parent, false)
         return ViewHolder(view)
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 
     //public suma ():int publuic int
@@ -22,7 +22,7 @@ class Categoria_Adaptador(var categorias:ArrayList<String>): RecyclerView.Adapte
     //devuelve cuantos elementos devuelve el adaptador
     //numero de elementos que tiene el adaptador*
         override fun getItemCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
         return  categorias.size
     }
 
@@ -32,7 +32,7 @@ class Categoria_Adaptador(var categorias:ArrayList<String>): RecyclerView.Adapte
 
         //seteo la categoria
         holder.view.tv_categoria.text = categoria
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 
 //Gestionar los elemento ( recibimos las refencias)
