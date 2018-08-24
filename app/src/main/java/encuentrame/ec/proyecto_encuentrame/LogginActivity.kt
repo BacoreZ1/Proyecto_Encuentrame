@@ -5,11 +5,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.Toast
-import com.facebook.CallbackManager
+import com.facebook.*
 import kotlinx.android.synthetic.main.activity_loggin.*
-import com.facebook.FacebookException
 import com.facebook.login.LoginResult
-import com.facebook.FacebookCallback
 import com.facebook.login.widget.LoginButton
 
 
@@ -56,6 +54,24 @@ class LogginActivity : AppCompatActivity() {
         login_button.registerCallback(manager, object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 // Nos llega la respuesta
+
+
+                //verificamos si ya llegaron o existen datos del usuario q inició sesión
+
+                if (Profile.getCurrentProfile() == null) {
+                    object : ProfileTracker() {
+                        override fun onCurrentProfileChanged(oldProfile: Profile?, currentProfile: Profile?) {
+                            Toast.makeText(this@LogginActivity, currentProfile.toString(), Toast.LENGTH_LONG).show()
+                            RetrofitApi().resgistroUsuario(currentProfile!!.firstName, currentProfile.lastName)
+                            //!!-> indica q no va a ser un null
+                        }
+                    }
+
+                } else {
+                    Toast.makeText(this@LogginActivity, Profile.getCurrentProfile().toString(), Toast.LENGTH_LONG).show()
+                    //creamos un objeto, en khotlin no es necesario el new
+                    RetrofitApi().resgistroUsuario(Profile.getCurrentProfile().firstName, Profile.getCurrentProfile().lastName)
+                }
             }
 
             override fun onCancel() {
@@ -68,9 +84,8 @@ class LogginActivity : AppCompatActivity() {
         })//el callback manda una referencia y esperas a que te devuelva una respuesta
 
 
-
-
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         manager!!.onActivityResult(requestCode, resultCode, data)//nos sale error y kotlin usa el !! para asegurar que la variable que va a venir no va a ser nula
         super.onActivityResult(requestCode, resultCode, data)
