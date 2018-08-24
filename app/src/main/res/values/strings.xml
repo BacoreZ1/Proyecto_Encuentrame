@@ -2,4 +2,6 @@
     <string name="app_name">Proyecto_Encuentrame</string>
     <string name="Contrasena">Contraseña</string>
     <string name="title_activity_mapa_maps">Map</string>
+    <string name="facebook_app_id">258886791407275</string>
+    <string name="fb_login_protocol_scheme">fb258886791407275</string>
 </resources>
