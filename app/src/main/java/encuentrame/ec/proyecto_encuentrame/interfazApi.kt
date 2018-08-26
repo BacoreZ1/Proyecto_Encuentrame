@@ -6,8 +6,8 @@ import retrofit2.http.*
 interface interfazApi{
 
     @Headers("Content-Type: application/json") //avisarle al servidor q estamos enviando datos tipo JSON
-    @POST("usuario/registro")
-    fun registrarUsuario(@Body params: HashMap<String, Any>): Call<String>
+    @POST("registro/Usuario")
+    fun registrarUsuario(@Body params: HashMap<String, Any>): Call<Respuesta>
 
     @Headers("Content-Type: application/json") //avisarle al servidor q estamos enviando datos tipo JSON
     @POST("usuario/iniciar_usuario")

@@ -14,12 +14,14 @@ import com.facebook.login.widget.LoginButton
 
 class LogginActivity : AppCompatActivity() {
 
-
+    var retrofitApi:RetrofitApi?=null
     var manager: CallbackManager? = null//el signo de interrogacion nos permite asignar un nulo a una variable ?
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loggin)
+        //Instanciando la clase para el consumo del servidor
+        retrofitApi=RetrofitApi()
         //obteniendo el texto que escriben en el campo correo
         //et_correo.text.toString()
         //obteniendo el texto que escriben en el campo contraseña
@@ -44,8 +46,21 @@ class LogginActivity : AppCompatActivity() {
                 if (Profile.getCurrentProfile() == null) {
                     object : ProfileTracker() {
                         override fun onCurrentProfileChanged(oldProfile: Profile?, currentProfile: Profile?) {
+                            Log.e("Login activity",currentProfile!!.lastName)//te indica en donde surge el error de la clase
                             Toast.makeText(this@LogginActivity, currentProfile.toString(), Toast.LENGTH_LONG).show()
-                            RetrofitApi().resgistroUsuario(currentProfile!!.firstName, currentProfile.lastName)
+                            retrofitApi!!.resgistroUsuario(currentProfile!!.firstName, currentProfile.lastName, object :CallbackApi<String>{
+                                override fun correcto(Respuesta: String) {
+                                    //en caso de que sea correcto se envia a la ventana principal
+
+                                    //iniciamos la actividad mediante un intent
+                                    startActivity(Intent(this@LogginActivity,MapaMapsActivity::class.java))
+                                }
+
+                                override fun error(error: String) {
+                                    //sino se presenta el error
+                                    Toast.makeText(this@LogginActivity, error, Toast.LENGTH_LONG).show()
+                                }
+                            })//asi se llaman las interfaces
                             //!!-> indica q no va a ser un null
                         }
                     }
@@ -53,7 +68,17 @@ class LogginActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this@LogginActivity, Profile.getCurrentProfile().toString(), Toast.LENGTH_LONG).show()
                     //creamos un objeto, en khotlin no es necesario el new
-                    RetrofitApi().resgistroUsuario(Profile.getCurrentProfile().firstName, Profile.getCurrentProfile().lastName)
+
+                    Log.e("Login activity",Profile.getCurrentProfile().lastName)
+                    retrofitApi!!.resgistroUsuario(Profile.getCurrentProfile().firstName, Profile.getCurrentProfile().lastName,object :CallbackApi<String>{
+                        override fun correcto(Respuesta: String) {
+                            startActivity(Intent(this@LogginActivity,MapaMapsActivity::class.java))
+                        }
+
+                        override fun error(error: String) {
+                            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                        }
+                    })
                 }
             }
 
