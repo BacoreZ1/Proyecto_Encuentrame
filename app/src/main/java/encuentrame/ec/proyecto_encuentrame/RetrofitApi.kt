@@ -43,30 +43,32 @@ class RetrofitApi {
         })
     }
 
-
-    fun obtenerCategorias(callbackApi: CallbackApi<Categoria>){
-        //request variable para peticiones
+    fun obteneraCategorias(callbackApi: CallbackApi<Categoria>){
         request.obtenerCategorias().enqueue(object : Callback<Categoria>{
-            override fun onFailure(call: Call<Categoria>?, t: Throwable?) {
+            override fun onFailure(call: Call<Categoria>, t: Throwable) {
                 callbackApi.error(t.toString())
             }
 
-            override fun onResponse(call: Call<Categoria>?, response: Response<Categoria>?) {
+            override fun onResponse(call: Call<Categoria>, response: Response<Categoria>) {
                 callbackApi.correcto(response!!.body()!!)
             }
         })
+
+
     }
 
-    fun obtenerSitios(callbackApi: CallbackApi<List<Sitio>>){
-        //request variable para peticiones
-        request.obtenerSitios().enqueue(object : Callback<List<Sitio>>{
-            override fun onFailure(call: Call<List<Sitio>>?, t: Throwable?) {
+    fun obtenerSitios(callbackApi: CallbackApi<List<Sitios>>){
+        request.obtenerSitios().enqueue(object : Callback<List<Sitios>>{
+            override fun onFailure(call: Call<List<Sitios>>, t: Throwable) {
                 callbackApi.error(t.toString())
             }
 
-            override fun onResponse(call: Call<List<Sitio>>?, response: Response<List<Sitio>>?) {
+            override fun onResponse(call: Call<List<Sitios>>, response: Response<List<Sitios>>) {
                 callbackApi.correcto(response!!.body()!!)
             }
         })
+
+
     }
+
 }
