@@ -42,4 +42,31 @@ class RetrofitApi {
             }
         })
     }
+
+
+    fun obtenerCategorias(callbackApi: CallbackApi<Categoria>){
+        //request variable para peticiones
+        request.obtenerCategorias().enqueue(object : Callback<Categoria>{
+            override fun onFailure(call: Call<Categoria>?, t: Throwable?) {
+                callbackApi.error(t.toString())
+            }
+
+            override fun onResponse(call: Call<Categoria>?, response: Response<Categoria>?) {
+                callbackApi.correcto(response!!.body()!!)
+            }
+        })
+    }
+
+    fun obtenerSitios(callbackApi: CallbackApi<List<Sitio>>){
+        //request variable para peticiones
+        request.obtenerSitios().enqueue(object : Callback<List<Sitio>>{
+            override fun onFailure(call: Call<List<Sitio>>?, t: Throwable?) {
+                callbackApi.error(t.toString())
+            }
+
+            override fun onResponse(call: Call<List<Sitio>>?, response: Response<List<Sitio>>?) {
+                callbackApi.correcto(response!!.body()!!)
+            }
+        })
+    }
 }
