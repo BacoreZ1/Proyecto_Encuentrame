@@ -18,9 +18,10 @@ import retrofit2.Retrofit
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var mMap: GoogleMap
+    var mMap: GoogleMap?= null
     var categorias= ArrayList<String>()
     var retrofitApi:RetrofitApi?= null
+    var sitios=ArrayList<Sitios>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,10 +55,9 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
        // categorias.add("Hoteles")
        // categorias.add("Restaurantes")
 
-
-
-
     }
+
+
 
     /**
      * Manipulates the map once available.
@@ -74,8 +74,29 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Add a marker in Sydney and move the camera
         //la ubicacion ddonde se mostarra el mapa la podemos modificar
-        val sydney = LatLng(-2.0, 11.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+        //
+        val ubicacion= LatLng(-4.0252113, -79.207801)
+        mMap!!.moveCamera(CameraUpdateFactory.newLatLng(ubicacion))
+
+        retrofitApi!!.obtenerSitios(object :CallbackApi<List<Sitios>>{
+
+            override fun correcto(respuesta: List<Sitios>) {
+                //Los vamos a mostrar en el mapa
+                sitios.addAll(respuesta)
+                sitios.forEach {
+                    val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
+                    mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
+                }
+
+
+
+
+            }
+
+            override fun error(error: String) {
+                Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
