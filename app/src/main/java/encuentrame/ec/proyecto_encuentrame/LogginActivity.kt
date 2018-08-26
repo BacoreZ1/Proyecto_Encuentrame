@@ -3,6 +3,7 @@ package encuentrame.ec.proyecto_encuentrame
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import com.facebook.*
@@ -79,7 +80,7 @@ class LogginActivity : AppCompatActivity() {
             }
 
             override fun onError(exception: FacebookException) {
-                // En caso de que ocurra un error
+                Log.e("fb",exception.toString());
             }
         })//el callback manda una referencia y esperas a que te devuelva una respuesta
 
