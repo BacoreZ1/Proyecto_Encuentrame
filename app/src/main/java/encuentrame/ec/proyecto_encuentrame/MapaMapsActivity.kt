@@ -1,5 +1,6 @@
 package encuentrame.ec.proyecto_encuentrame
 
+import android.Manifest
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
@@ -15,13 +16,28 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_mapa_maps.*
 import retrofit2.Callback
 import retrofit2.Retrofit
+import android.Manifest.permission
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.content.pm.PackageManager
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.annotation.NonNull
 
-class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
+
+
+
+
+
+class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMyLocationButtonClickListener {
+    override fun onMyLocationButtonClick(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     var mMap: GoogleMap?= null
     var categorias= ArrayList<String>()
     var retrofitApi:RetrofitApi?= null
     var sitios=ArrayList<Sitios>()
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +78,9 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     override fun onMapReady(googleMap: GoogleMap) {
         //lmacenar en una variable para usar luego
         mMap = googleMap
+
+
+        enableMyLocation()
 
         // Add a marker in Sydney and move the camera
         //la ubicacion ddonde se mostarra el mapa la podemos modificar
@@ -106,6 +125,28 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
+    private fun enableMyLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Permission to access the location is missing.
+            ActivityCompat.requestPermissions(this@MapaMapsActivity,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE)
+        } else if (mMap != null) {
+            // Access to the location has been granted to the app.
+            mMap!!.setMyLocationEnabled(true)
+        }
+    }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
+                                            grantResults: IntArray) {
+        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
+            return
+        }
 
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            enableMyLocation()
+        } else {
+
+        }
+    }
 }

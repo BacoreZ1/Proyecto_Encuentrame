@@ -45,6 +45,8 @@ class Categoria_Adaptador(var categorias:ArrayList<String>, var interfaz: interf
     //cada vez que hagamos click a una seccion de las categorias nos filtre los sitios
     //creamos una interfaz para comunicar el adaptador con la clase Mapa
     interface interfazClickCategoria{
+
+
         fun filtrarPorCategoria(categoria: String)
     }
 }
