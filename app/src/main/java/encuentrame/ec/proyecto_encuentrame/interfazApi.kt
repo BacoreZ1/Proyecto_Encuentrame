@@ -14,4 +14,8 @@ interface interfazApi {
     fun obtenerCategorias(): Call<Categoria>
 
 
+    @Headers("Content-Type: application/json") //avisarle al servidor q estamos enviando datos tipo JSON
+    @GET("sitios/listar")
+    fun obtenerSitios(): Call<List<Sitios>>
+
 }

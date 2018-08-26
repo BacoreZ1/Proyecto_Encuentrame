@@ -56,4 +56,19 @@ class RetrofitApi {
 
 
     }
+
+    fun obtenerSitios(callbackApi: CallbackApi<List<Sitios>>){
+        request.obtenerSitios().enqueue(object : Callback<List<Sitios>>{
+            override fun onFailure(call: Call<List<Sitios>>, t: Throwable) {
+                callbackApi.error(t.toString())
+            }
+
+            override fun onResponse(call: Call<List<Sitios>>, response: Response<List<Sitios>>) {
+                callbackApi.correcto(response!!.body()!!)
+            }
+        })
+
+
+    }
+
 }
