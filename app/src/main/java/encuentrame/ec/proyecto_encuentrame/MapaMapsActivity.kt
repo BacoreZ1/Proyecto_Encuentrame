@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.widget.LinearLayout
+import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -12,11 +13,14 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_mapa_maps.*
+import retrofit2.Callback
+import retrofit2.Retrofit
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     var categorias= ArrayList<String>()
+    var retrofitApi:RetrofitApi?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,11 +32,28 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ///se hizo un cambio
 
 
-        categorias.add("Hoteles")
-        categorias.add("Restaurantes")
-        var adaptador = Categoria_Adaptador(categorias) //creando adaptador con los iteq se realizcen
-        rv_categorias.layoutManager= LinearLayoutManager(this, LinearLayout.HORIZONTAL, false)
-        rv_categorias.adapter= adaptador
+        retrofitApi= RetrofitApi()
+
+        retrofitApi!!.obteneraCategorias(object :CallbackApi<Categoria>{
+            override fun correcto(respuesta: Categoria) {
+                respuesta.categorias.forEach{
+                    categorias.add(it)
+                }
+                //LLenar visualmente la lista de categorias
+                var adaptador = Categoria_Adaptador(categorias) //creando adaptador con los iteq se realizcen
+                rv_categorias.layoutManager= LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
+                rv_categorias.adapter= adaptador
+
+            }
+
+            override fun error(error: String) {
+              Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
+            }
+        })
+
+       // categorias.add("Hoteles")
+       // categorias.add("Restaurantes")
+
 
 
 

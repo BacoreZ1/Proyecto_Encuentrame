@@ -42,4 +42,18 @@ class RetrofitApi {
             }
         })
     }
+
+    fun obteneraCategorias(callbackApi: CallbackApi<Categoria>){
+        request.obtenerCategorias().enqueue(object : Callback<Categoria>{
+            override fun onFailure(call: Call<Categoria>, t: Throwable) {
+                callbackApi.error(t.toString())
+            }
+
+            override fun onResponse(call: Call<Categoria>, response: Response<Categoria>) {
+                callbackApi.correcto(response!!.body()!!)
+            }
+        })
+
+
+    }
 }
