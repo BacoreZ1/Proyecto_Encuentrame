@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_mapa_maps.*
 import retrofit2.Callback
 import retrofit2.Retrofit
 
-class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
 
     var mMap: GoogleMap?= null
     var categorias= ArrayList<String>()
@@ -41,7 +41,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     categorias.add(it)
                 }
                 //LLenar visualmente la lista de categorias
-                var adaptador = Categoria_Adaptador(categorias) //creando adaptador con los iteq se realizcen
+                var adaptador = Categoria_Adaptador(categorias,this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
                 rv_categorias.layoutManager= LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
                 rv_categorias.adapter= adaptador
 
@@ -59,15 +59,6 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     override fun onMapReady(googleMap: GoogleMap) {
         //lmacenar en una variable para usar luego
         mMap = googleMap
@@ -99,4 +90,22 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
     }
+
+    override fun filtrarPorCategoria(categoria: String) {
+        //esto filtra -> filter, dentro del cual va la confdicion con la cual quiero que se filttren mis elementos
+        var  sitiosFiltrados = sitios.filter {
+            it.categoria.equals(categoria)
+        }
+
+        //limpiar el mapa y dibujar nuevamente los markers
+        mMap!!.clear()
+        sitiosFiltrados.forEach {
+            val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
+            mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
+
+        }
+    }
+
+
+
 }

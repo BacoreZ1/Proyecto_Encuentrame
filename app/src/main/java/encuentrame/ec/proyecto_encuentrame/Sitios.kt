@@ -1,6 +1,6 @@
 package encuentrame.ec.proyecto_encuentrame
 
-class Sitio {
+class Sitios {
     var nombre: String = ""
     var descripcion: String = ""
     var foto: String = ""
