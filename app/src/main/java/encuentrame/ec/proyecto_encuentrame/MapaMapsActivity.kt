@@ -11,8 +11,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_mapa_maps.*
 import retrofit2.Callback
 import retrofit2.Retrofit
@@ -32,10 +30,12 @@ import android.util.Log
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.*
 
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
+
+    var marcadorUbicacion:MarkerOptions?=null
 
     var mMap: GoogleMap?= null
     var categorias= ArrayList<String>()
@@ -113,6 +113,11 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         //lmacenar en una variable para usar luego
         mMap = googleMap
 
+        val ubicacion= LatLng(-4.0252113, -79.207801)
+        //Crear el marcador de mi ubicacion
+
+        marcadorUbicacion=MarkerOptions().position(ubicacion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
+                .title("Mi posición")
 
 
 
@@ -120,7 +125,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         //la ubicacion ddonde se mostarra el mapa la podemos modificar
 
         //
-        val ubicacion= LatLng(-4.0252113, -79.207801)
+
         mMap!!.moveCamera(CameraUpdateFactory.newLatLng(ubicacion))
 
         retrofitApi!!.obtenerSitios(object :CallbackApi<List<Sitios>>{
@@ -190,6 +195,10 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 .zoom(14F)
                 .build()
 
+        var posicion=LatLng(mCurrentLocation.latitude,mCurrentLocation.longitude)
+
+        marcadorUbicacion!!.position(posicion)
+        mMap!!.addMarker(marcadorUbicacion)
         mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
 
@@ -217,6 +226,10 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
             tv_title.text = ""
             tv_descripcion.text = sitios[0].nombre
         }
+
+
+
+
     }
 
     fun createLocationRequest() {
