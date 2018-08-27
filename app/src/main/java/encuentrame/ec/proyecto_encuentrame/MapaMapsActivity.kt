@@ -32,6 +32,7 @@ import android.util.Log
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.CameraPosition
 
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
@@ -183,7 +184,12 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     }
 
     private fun mostrarUbicacionMapa(mCurrentLocation: Location?) {
+        val cameraPosition = CameraPosition.Builder()
+                .target(com.google.android.gms.maps.model.LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
+                .zoom(14F)
+                .build()
 
+        mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
     fun createLocationRequest() {
