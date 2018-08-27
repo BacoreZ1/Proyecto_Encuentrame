@@ -32,12 +32,12 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         //buscar el sitio con la condicion asignada
         //devolver todos lo sitios que tegan ese titulo
         //buscar dentro de los siios que sea igual
-        var busqueda=  sitios.find {
+        var busqueda = sitios.find {
             it.nombre.equals(p0!!.title)
         }
 
         //Enviar datos y abrir la actividad del perfil del sitio
-        val intent=Intent(this@MapaMapsActivity, DetalleSitioActivity::class.java)
+        val intent = Intent(this@MapaMapsActivity, DetalleSitioActivity::class.java)
 
         //Añadir el objeot a la otra actividad
         //
@@ -57,15 +57,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         return true
     }
 
-    var marcadorUbicacion:MarkerOptions?=null
+    var marcadorUbicacion: MarkerOptions? = null
 
-    var mMap: GoogleMap?= null
-    var categorias= ArrayList<String>()
-    var retrofitApi:RetrofitApi?= null
-    var sitios=ArrayList<Sitios>()
+    var mMap: GoogleMap? = null
+    var categorias = ArrayList<String>()
+    var retrofitApi: RetrofitApi? = null
+    var sitios = ArrayList<Sitios>()
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
-    var sitiosFiltrados: List<Sitios>?=null
+    var sitiosFiltrados: List<Sitios>? = null
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -78,10 +78,6 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     private val REQUEST_CHECK_SETTINGS = 0x1
     private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 1000
     private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
-
-
-
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,33 +98,36 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         createLocationRequest()
         buildLocationSettingsRequest()
 
-        btn_ubicacion.setOnClickListener{
+        btn_ubicacion.setOnClickListener {
             getLocation()
         }
-        retrofitApi= RetrofitApi()
+        retrofitApi = RetrofitApi()
 
-        retrofitApi!!.obteneraCategorias(object :CallbackApi<Categoria>{
+        retrofitApi!!.obteneraCategorias(object : CallbackApi<Categoria> {
             override fun correcto(respuesta: Categoria) {
-                respuesta.categorias.forEach{
+                respuesta.categorias.forEach {
                     categorias.add(it)
                 }
                 //LLenar visualmente la lista de categorias
-                var adaptador = Categoria_Adaptador(categorias,this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
-                rv_categorias.layoutManager= LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
-                rv_categorias.adapter= adaptador
+                var adaptador = Categoria_Adaptador(categorias, this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
+                rv_categorias.layoutManager = LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
+                rv_categorias.adapter = adaptador
 
             }
 
             override fun error(error: String) {
-              Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
             }
         })
 
-       // categorias.add("Hoteles")
-       // categorias.add("Restaurantes")
+        // categorias.add("Hoteles")
+        // categorias.add("Restaurantes")
+        btn_salir.setOnClickListener {
+            val intent = Intent(this@MapaMapsActivity, LogginActivity::class.java)
 
+            startActivity(intent)
+        }
     }
-
 
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -138,12 +137,11 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         mMap!!.setOnInfoWindowClickListener(this)
 
 
-        val ubicacion= LatLng(-4.0252113, -79.207801)
+        val ubicacion = LatLng(-4.0252113, -79.207801)
         //Crear el marcador de mi ubicacion
 
-        marcadorUbicacion=MarkerOptions().position(ubicacion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
+        marcadorUbicacion = MarkerOptions().position(ubicacion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
                 .title("Mi posición")
-
 
 
         // Add a marker in Sydney and move the camera
@@ -153,20 +151,17 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
         mMap!!.moveCamera(CameraUpdateFactory.newLatLng(ubicacion))
 
-        retrofitApi!!.obtenerSitios(object :CallbackApi<List<Sitios>>{
+        retrofitApi!!.obtenerSitios(object : CallbackApi<List<Sitios>> {
 
             override fun correcto(respuesta: List<Sitios>) {
                 //Los vamos a mostrar en el mapa
                 sitios.addAll(respuesta)
                 sitios.forEach {
                     val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
-                    mMap!!.addMarker(MarkerOptions().
-                            position(ubicacionSitio)
+                    mMap!!.addMarker(MarkerOptions().position(ubicacionSitio)
                             .title(it.nombre)
                     )
                 }
-
-
 
 
             }
@@ -189,6 +184,9 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
             val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
             mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
 
+        }
+        if (::mCurrentLocation.isInitialized) {
+            mMap!!.addMarker(marcadorUbicacion)
         }
     }
 
@@ -219,7 +217,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 .zoom(14F)
                 .build()
 
-        var posicion=LatLng(mCurrentLocation.latitude,mCurrentLocation.longitude)
+        var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
 
         marcadorUbicacion!!.position(posicion)
         mMap!!.addMarker(marcadorUbicacion)
@@ -234,7 +232,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 it.distancia = distancia
             }
 
-            sitiosFiltrados!!.sortedBy {it.distancia   }
+            sitiosFiltrados!!.sortedBy { it.distancia }
 
             tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
             tv_descripcion.text = sitiosFiltrados!![0].nombre
@@ -250,8 +248,6 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
             tv_title.text = ""
             tv_descripcion.text = sitios[0].nombre
         }
-
-
 
 
     }
@@ -388,7 +384,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         return R * c;
     }
 
-    fun toRad(num:Double): Double {
+    fun toRad(num: Double): Double {
         return num * Math.PI / 180
     }
 
