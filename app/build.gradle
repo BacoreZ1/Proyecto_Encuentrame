@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     defaultConfig {
         applicationId "encuentrame.ec.proyecto_encuentrame"
         minSdkVersion 21
@@ -38,4 +38,5 @@ dependencies {
     //Gson
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
     implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation "com.google.android.gms:play-services-location:15.0.1"
 }

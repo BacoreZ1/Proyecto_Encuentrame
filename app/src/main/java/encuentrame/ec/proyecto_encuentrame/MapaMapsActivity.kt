@@ -18,20 +18,23 @@ import retrofit2.Callback
 import retrofit2.Retrofit
 import android.Manifest.permission
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.location.Location
+import android.os.Looper
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.annotation.NonNull
+import android.util.Log
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 
 
-
-
-
-
-class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMyLocationButtonClickListener {
-    override fun onMyLocationButtonClick(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
 
     var mMap: GoogleMap?= null
     var categorias= ArrayList<String>()
@@ -39,7 +42,27 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     var sitios=ArrayList<Sitios>()
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+    private lateinit var mSettingsClient: SettingsClient
+    private lateinit var mCurrentLocation: Location
+    private lateinit var mLocationSettingsRequest: LocationSettingsRequest
+
+    private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
+    private val REQUEST_CHECK_SETTINGS = 0x1
+    private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 1000
+    private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
+
+
+
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mapa_maps)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -49,6 +72,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         ///se hizo un cambio
 
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        mSettingsClient = LocationServices.getSettingsClient(this)
+        createLocationCallback()
+        createLocationRequest()
+        buildLocationSettingsRequest()
+
+        btn_ubicacion.setOnClickListener{
+            getLocation()
+        }
         retrofitApi= RetrofitApi()
 
         retrofitApi!!.obteneraCategorias(object :CallbackApi<Categoria>{
@@ -80,7 +112,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         mMap = googleMap
 
 
-        enableMyLocation()
+
 
         // Add a marker in Sydney and move the camera
         //la ubicacion ddonde se mostarra el mapa la podemos modificar
@@ -125,28 +157,153 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
-    private fun enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Permission to access the location is missing.
-            ActivityCompat.requestPermissions(this@MapaMapsActivity,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    LOCATION_PERMISSION_REQUEST_CODE)
-        } else if (mMap != null) {
-            // Access to the location has been granted to the app.
-            mMap!!.setMyLocationEnabled(true)
+
+
+
+
+
+    private fun buildLocationSettingsRequest() {
+        mLocationSettingsRequest = LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest).build()
+    }
+
+    private fun createLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                for (location in locationResult.locations) {
+                    Log.e("Mapas", "" + location.latitude)
+                    mCurrentLocation = location
+                    mostrarUbicacionMapa(mCurrentLocation)
+                    stopLocationUpdates()
+
+                }
+            }
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
-        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
-            return
+    private fun mostrarUbicacionMapa(mCurrentLocation: Location?) {
+
+    }
+
+    fun createLocationRequest() {
+        locationRequest = LocationRequest().apply {
+            interval = UPDATE_INTERVAL_IN_MILLISECONDS
+            fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            enableMyLocation()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
+                .addOnSuccessListener(this) {
+                    Log.e("Mapas", "All location settings are satisfied.")
+                    fusedLocationClient.requestLocationUpdates(locationRequest,
+                            locationCallback, Looper.myLooper())
+
+                }
+                .addOnFailureListener(this) { e ->
+                    val statusCode = (e as ApiException).statusCode
+                    when (statusCode) {
+                        LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+                            Log.e("Mapas", "Location settings are not satisfied. Attempting to upgrade " + "location settings ")
+                            try {
+                                // Show the dialog by calling startResolutionForResult(), and check the
+                                // result in onActivityResult().
+                                val rae = e as ResolvableApiException
+                                rae.startResolutionForResult(this@MapaMapsActivity, REQUEST_CHECK_SETTINGS)
+                            } catch (se: IntentSender.SendIntentException) {
+                                //   Log.i(FragmentActivity.TAG, "PendingIntent unable to execute request.")
+                            }
+
+                        }
+                        LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                            val errorMessage = "Location settings are inadequate, and cannot be " + "fixed here. Fix in Settings."
+                            //   Log.e(FragmentActivity.TAG, errorMessage)
+                            Toast.makeText(this@MapaMapsActivity, errorMessage, Toast.LENGTH_LONG).show()
+                            // requestingLocationUpdates = false
+                        }
+                    }
+                    // updateUI()
+                }
+    }
+
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    fun getLocation() {
+        if (checkPermissions()) {
+            startLocationUpdates();
         } else {
-
+            requestPermissions();
         }
     }
+
+
+    /*Permisos*/
+    private fun requestPermissions() {
+
+        val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+
+
+        ActivityCompat.requestPermissions(this@MapaMapsActivity,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_PERMISSIONS_REQUEST_CODE)
+
+    }
+
+    private fun checkPermissions(): Boolean {
+        var permissionState = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        return permissionState == PackageManager.PERMISSION_GRANTED;
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.i("Mapas", "onRequestPermissionResult");
+        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.size <= 0) {
+
+                Log.e("Mapas", "User interaction was cancelled.");
+            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+
+            } else {
+                Log.e("Mapas", "no se han habilitado los permisos")
+
+                //notificar que el permiso no ha sido concedido
+            }
+        }
+    }
+
+    /*Activity Result */
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+        // Check for the integer request code originally supplied to startResolutionForResult().
+            REQUEST_CHECK_SETTINGS -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        Log.e("Mapas", "User agreed to make required location settings changes.")
+                        startLocationUpdates();
+// Nothing to do. startLocationupdates() gets called in onResume again.
+                    }
+                    Activity.RESULT_CANCELED -> {
+                        Log.e("Mapas", "User chose not to make required location settings changes.")
+
+
+                        //requestingLocationUpdates = false;
+                        //updateUI();
+                    }
+                }
+            }
+        }
+    }
+
+
 }
