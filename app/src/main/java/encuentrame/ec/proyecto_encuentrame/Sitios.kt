@@ -1,6 +1,8 @@
 package encuentrame.ec.proyecto_encuentrame
 
-class Sitios {
+import java.io.Serializable
+
+class Sitios: Serializable {
     var nombre: String = ""
     var descripcion: String = ""
     var foto: String = ""

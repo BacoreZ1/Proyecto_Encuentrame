@@ -12,10 +12,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_mapa_maps.*
-import retrofit2.Callback
-import retrofit2.Retrofit
-import android.Manifest.permission
-import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -24,8 +20,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Looper
 import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.annotation.NonNull
 import android.util.Log
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
@@ -33,7 +27,31 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.*
 
 
-class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria {
+class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMarkerClickListener {
+    //Este metodo, reacciona cuando le demos clic a un marcador
+    override fun onMarkerClick(p0: Marker?): Boolean {
+        p0!!.title
+        //buscar el sitio con la condicion asignada
+        //devolver todos lo sitios que tegan ese titulo
+        //buscar dentro de los siios que sea igual
+        var busqueda=  sitios.find {
+            it.nombre.equals(p0!!.title)
+        }
+
+        //Enviar datos y abrir la actividad del perfil del sitio
+        val intent=Intent(this@MapaMapsActivity, DetalleSitioActivity::class.java)
+
+        //Añadir el objeot a la otra actividad
+        //
+        intent.putExtra("sitio", busqueda)
+
+        //iniciar acitvidad
+        startActivity(intent)
+        //MOSTAR EN CONSOLA Log.e("SITIO CLICK", busqueda!!.nombre)
+
+
+        return true
+    }
 
     var marcadorUbicacion:MarkerOptions?=null
 
@@ -112,6 +130,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     override fun onMapReady(googleMap: GoogleMap) {
         //lmacenar en una variable para usar luego
         mMap = googleMap
+        mMap!!.setOnMarkerClickListener(this)
 
         val ubicacion= LatLng(-4.0252113, -79.207801)
         //Crear el marcador de mi ubicacion
@@ -135,7 +154,10 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 sitios.addAll(respuesta)
                 sitios.forEach {
                     val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
-                    mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
+                    mMap!!.addMarker(MarkerOptions().
+                            position(ubicacionSitio)
+                            .title(it.nombre)
+                    )
                 }
 
 
@@ -163,10 +185,6 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
         }
     }
-
-
-
-
 
 
     private fun buildLocationSettingsRequest() {
