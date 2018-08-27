@@ -8,4 +8,5 @@ class Sitios {
     var latitud: String = ""
     var longitud: String = ""
     var id: Int =0
+    var distancia: Double= 0.0
 }

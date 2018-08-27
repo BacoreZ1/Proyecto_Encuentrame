@@ -43,6 +43,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     var sitios=ArrayList<Sitios>()
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
+    var sitiosFiltrados: List<Sitios>?=null
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -145,13 +146,13 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     override fun filtrarPorCategoria(categoria: String) {
         //esto filtra -> filter, dentro del cual va la confdicion con la cual quiero que se filttren mis elementos
-        var  sitiosFiltrados = sitios.filter {
+        sitiosFiltrados = sitios.filter {
             it.categoria.equals(categoria)
         }
 
         //limpiar el mapa y dibujar nuevamente los markers
         mMap!!.clear()
-        sitiosFiltrados.forEach {
+        sitiosFiltrados!!.forEach {
             val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
             mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
 
@@ -190,6 +191,32 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 .build()
 
         mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+
+
+        if (sitiosFiltrados != null) {
+
+            sitiosFiltrados!!.forEach {
+                val distancia = getDistance(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude, it.latitud.toDouble(), it.longitud.toDouble())
+                it.distancia = distancia
+            }
+
+            sitiosFiltrados!!.sortedBy {it.distancia   }
+
+            tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
+            tv_descripcion.text = sitiosFiltrados!![0].nombre
+
+        } else {
+
+            sitios.forEach {
+                val distancia = getDistance(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude, it.latitud.toDouble(), it.longitud.toDouble())
+                it.distancia = distancia
+            }
+            sitios.sortBy { it.distancia }
+
+            tv_title.text = ""
+            tv_descripcion.text = sitios[0].nombre
+        }
     }
 
     fun createLocationRequest() {
@@ -309,6 +336,23 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 }
             }
         }
+    }
+
+
+    fun getDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371; // km
+        val dLat = toRad(lat1 - lat2);
+        val dLon = toRad(lon1 - lon2);
+
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        return R * c;
+    }
+
+    fun toRad(num:Double): Double {
+        return num * Math.PI / 180
     }
 
 
