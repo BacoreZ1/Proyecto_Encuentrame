@@ -27,10 +27,8 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.*
 
 
-class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMarkerClickListener {
-    //Este metodo, reacciona cuando le demos clic a un marcador
-    override fun onMarkerClick(p0: Marker?): Boolean {
-        p0!!.title
+class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
+    override fun onInfoWindowClick(p0: Marker?) {
         //buscar el sitio con la condicion asignada
         //devolver todos lo sitios que tegan ese titulo
         //buscar dentro de los siios que sea igual
@@ -49,6 +47,12 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         startActivity(intent)
         //MOSTAR EN CONSOLA Log.e("SITIO CLICK", busqueda!!.nombre)
 
+
+    }
+
+    //Este metodo, reacciona cuando le demos clic a un marcador
+    override fun onMarkerClick(p0: Marker?): Boolean {
+        p0!!.showInfoWindow()
 
         return true
     }
@@ -131,6 +135,8 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         //lmacenar en una variable para usar luego
         mMap = googleMap
         mMap!!.setOnMarkerClickListener(this)
+        mMap!!.setOnInfoWindowClickListener(this)
+
 
         val ubicacion= LatLng(-4.0252113, -79.207801)
         //Crear el marcador de mi ubicacion
