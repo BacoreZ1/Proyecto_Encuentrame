@@ -72,7 +72,9 @@ class LogginActivity : AppCompatActivity() {
                     Log.e("Login activity",Profile.getCurrentProfile().lastName)
                     retrofitApi!!.resgistroUsuario(Profile.getCurrentProfile().firstName, Profile.getCurrentProfile().lastName,object :CallbackApi<String>{
                         override fun correcto(Respuesta: String) {
-                            startActivity(Intent(this@LogginActivity,MapaMapsActivity::class.java))
+                            var intent=Intent(this@LogginActivity, MapaMapsActivity::class.java)
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                            startActivity(intent)
                         }
 
                         override fun error(error: String) {
@@ -91,6 +93,12 @@ class LogginActivity : AppCompatActivity() {
             }
         })//el callback manda una referencia y esperas a que te devuelva una respuesta
 
+
+        if (Profile.getCurrentProfile()!=null){
+            var intent=Intent(this@LogginActivity, MapaMapsActivity::class.java)
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
+        }
 
     }
 

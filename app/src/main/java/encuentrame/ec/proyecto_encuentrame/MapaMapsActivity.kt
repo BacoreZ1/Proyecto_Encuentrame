@@ -21,6 +21,7 @@ import android.location.Location
 import android.os.Looper
 import android.support.v4.app.ActivityCompat
 import android.util.Log
+import com.facebook.login.LoginManager
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -123,8 +124,11 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         // categorias.add("Hoteles")
         // categorias.add("Restaurantes")
         btn_salir.setOnClickListener {
-            val intent = Intent(this@MapaMapsActivity, LogginActivity::class.java)
 
+            LoginManager.getInstance().logOut()
+
+            val intent = Intent(this@MapaMapsActivity, LogginActivity::class.java)
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             startActivity(intent)
         }
     }
