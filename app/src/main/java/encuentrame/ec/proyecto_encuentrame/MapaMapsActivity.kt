@@ -1,34 +1,35 @@
 package encuentrame.ec.proyecto_encuentrame
 
 import android.Manifest
-import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.widget.LinearLayout
-import android.widget.Toast
-
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import kotlinx.android.synthetic.main.activity_mapa_maps.*
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Bundle
 import android.os.Looper
 import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.widget.LinearLayout
+import android.widget.Toast
 import com.facebook.login.LoginManager
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import kotlinx.android.synthetic.main.activity_mapa_maps.*
 
 
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
+
+
     override fun onInfoWindowClick(p0: Marker?) {
         //buscar el sitio con la condicion asignada
         //devolver todos lo sitios que tegan ese titulo
@@ -54,11 +55,13 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     //Este metodo, reacciona cuando le demos clic a un marcador
     override fun onMarkerClick(p0: Marker?): Boolean {
         p0!!.showInfoWindow()
-
         return true
     }
 
-    var marcadorUbicacion: MarkerOptions? = null
+
+    //Cambio
+    var marcadorUbicacion: Marker? = null
+    //Fin cambio
 
     var mMap: GoogleMap? = null
     var categorias = ArrayList<String>()
@@ -93,22 +96,31 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         ///se hizo un cambio
 
 
+        //Obtener la ubicacion
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         mSettingsClient = LocationServices.getSettingsClient(this)
         createLocationCallback()
         createLocationRequest()
         buildLocationSettingsRequest()
 
+
+        //
         btn_ubicacion.setOnClickListener {
             getLocation()
         }
+
+
         retrofitApi = RetrofitApi()
 
+
         retrofitApi!!.obteneraCategorias(object : CallbackApi<Categoria> {
+
             override fun correcto(respuesta: Categoria) {
+
                 respuesta.categorias.forEach {
                     categorias.add(it)
                 }
+
                 //LLenar visualmente la lista de categorias
                 var adaptador = Categoria_Adaptador(categorias, this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
                 rv_categorias.layoutManager = LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
@@ -123,14 +135,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
         // categorias.add("Hoteles")
         // categorias.add("Restaurantes")
+
+        //COdigo para cerrar sesion
         btn_salir.setOnClickListener {
-
             LoginManager.getInstance().logOut()
-
             val intent = Intent(this@MapaMapsActivity, LogginActivity::class.java)
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             startActivity(intent)
         }
+
     }
 
 
@@ -142,24 +155,19 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
 
         val ubicacion = LatLng(-4.0252113, -79.207801)
-        //Crear el marcador de mi ubicacion
 
-        marcadorUbicacion = MarkerOptions().position(ubicacion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
-                .title("Mi posición")
-
-
-        // Add a marker in Sydney and move the camera
-        //la ubicacion ddonde se mostarra el mapa la podemos modificar
-
-        //
 
         mMap!!.moveCamera(CameraUpdateFactory.newLatLng(ubicacion))
+
+
 
         retrofitApi!!.obtenerSitios(object : CallbackApi<List<Sitios>> {
 
             override fun correcto(respuesta: List<Sitios>) {
                 //Los vamos a mostrar en el mapa
+
                 sitios.addAll(respuesta)
+
                 sitios.forEach {
                     val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
                     mMap!!.addMarker(MarkerOptions().position(ubicacionSitio)
@@ -178,19 +186,34 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     override fun filtrarPorCategoria(categoria: String) {
         //esto filtra -> filter, dentro del cual va la confdicion con la cual quiero que se filttren mis elementos
+
         sitiosFiltrados = sitios.filter {
             it.categoria.equals(categoria)
         }
 
         //limpiar el mapa y dibujar nuevamente los markers
         mMap!!.clear()
+
         sitiosFiltrados!!.forEach {
             val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
             mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
 
         }
+
         if (::mCurrentLocation.isInitialized) {
-            mMap!!.addMarker(marcadorUbicacion)
+
+            //Cambios
+            var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
+
+            marcadorUbicacion = mMap!!.addMarker(MarkerOptions().position(posicion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
+                    .title("Mi posición"))
+
+            sitiosFiltrados!!.sortedBy { it.distancia }
+
+            tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
+            tv_descripcion.text = sitiosFiltrados!![0].nombre
+
+            //Fin Cambio
         }
     }
 
@@ -215,18 +238,28 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
+
     private fun mostrarUbicacionMapa(mCurrentLocation: Location?) {
+
         val cameraPosition = CameraPosition.Builder()
                 .target(com.google.android.gms.maps.model.LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
                 .zoom(14F)
                 .build()
 
+        //Cambio
+        if (marcadorUbicacion != null) {
+            marcadorUbicacion!!.remove()
+        }
+
         var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
 
-        marcadorUbicacion!!.position(posicion)
-        mMap!!.addMarker(marcadorUbicacion)
-        mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+        //Crear el marcador de mi ubicacion
+        marcadorUbicacion = mMap!!.addMarker(MarkerOptions().position(posicion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
+                .title("Mi posición"))
 
+        //cambio
+
+        mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
 
         if (sitiosFiltrados != null) {
@@ -247,9 +280,10 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 val distancia = getDistance(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude, it.latitud.toDouble(), it.longitud.toDouble())
                 it.distancia = distancia
             }
+
             sitios.sortBy { it.distancia }
 
-            tv_title.text = ""
+            tv_title.text = sitios!![0].categoria + " cerca"
             tv_descripcion.text = sitios[0].nombre
         }
 
