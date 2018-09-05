@@ -26,42 +26,44 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_mapa_maps.*
 
-
+/**
+ * Esta esta clase es en la que vamos a controlar el mapa, las categorias y los sitios de nuestra aplicacion
+ *
+ *
+ * @param AppCompatActivity  nos va a permitir crear un layout para poder insertar la lista de categorias
+ * @param OnMapReadyCallback  nos va a permitir crear el mapa de google
+ * @param Categoria_Adaptador  nos va a permitir crear un adaptador de cada categoria para poder cargarlo en la lista
+ * @param OnMarkerClickListener  nos va a permitir dar click en los marcadores que se dibujan en el mapa
+ * @param OnInfoWindowClickListener  nos va a permitir colocar informacion encima de los marcadores de los sitios en el mapa
+ */
 class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adaptador.interfazClickCategoria, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
-
-
+    /**
+     * Este metodo nos va a permitir mostrar el titulo del sitio cuando demos click en el marcador del mismo y nos va a llevar a la siguiente ventana para mostrar los detalles del sitio
+     *
+     * @param p0 variable que almacena el sitio
+     */
     override fun onInfoWindowClick(p0: Marker?) {
-        //buscar el sitio con la condicion asignada
-        //devolver todos lo sitios que tegan ese titulo
-        //buscar dentro de los siios que sea igual
         var busqueda = sitios.find {
             it.nombre.equals(p0!!.title)
         }
-
-        //Enviar datos y abrir la actividad del perfil del sitio
         val intent = Intent(this@MapaMapsActivity, DetalleSitioActivity::class.java)
-
-        //Añadir el objeot a la otra actividad
-        //
+        //nos permite enviar la informacion de una ventana a otra que debe estar serializable para poder recibir estos parametros
         intent.putExtra("sitio", busqueda)
-
-        //iniciar acitvidad
         startActivity(intent)
-        //MOSTAR EN CONSOLA Log.e("SITIO CLICK", busqueda!!.nombre)
-
-
     }
 
-    //Este metodo, reacciona cuando le demos clic a un marcador
+    /**
+     * Este metodo nos va a permitir dar click en el marcador del sitio para que nos cargue la informacion del sitio seleccionado
+     *
+     * @param p0 variable que almacena el sitio
+     * @return boolean de de verdadero si se cargo el sitio
+     */
     override fun onMarkerClick(p0: Marker?): Boolean {
         p0!!.showInfoWindow()
         return true
     }
 
-
-    //Cambio
     var marcadorUbicacion: Marker? = null
-    //Fin cambio
 
     var mMap: GoogleMap? = null
     var categorias = ArrayList<String>()
@@ -70,7 +72,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
     var sitiosFiltrados: List<Sitios>? = null
-
+    //Variables para poder obtener la ubicacion
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
@@ -83,60 +85,62 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
     private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 1000
     private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
-
+    /**
+     * Este metodo va a iniciarse al abrir el layout y nos permite cargar el mapa asi como inicializar los botones y cargar las categorias a la lista
+     *
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
 
-
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_mapa_maps)
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        super.onCreate(savedInstanceState)//aqui almacenamos la informacion que tenemos previamente cargada OJOOJOJOJOJOJOJOJOJOJOJOJOJ
+        setContentView(R.layout.activity_mapa_maps)//llamamos al layout
+        //Estos parametros nos los otora google para que se muestre el mapa
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        ///se hizo un cambio
 
-
-        //Obtener la ubicacion
+        //Variables utilizadas para obtener la ubicacion
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         mSettingsClient = LocationServices.getSettingsClient(this)
         createLocationCallback()
         createLocationRequest()
         buildLocationSettingsRequest()
 
-
-        //
+        //Boton que nos permite determinar la ubicacion de un cliente al hacer click
         btn_ubicacion.setOnClickListener {
             getLocation()
         }
 
-
         retrofitApi = RetrofitApi()
-
-
+        /**
+         * Este metodo nos ca a permitir llamar todas las categorias
+         *
+         * @param CallbackApi nos va a devolver todas las categorias en una lista
+         */
         retrofitApi!!.obteneraCategorias(object : CallbackApi<Categoria> {
-
+            /**
+             * Este metodo nos va a recibir las categorias y las va a ir añadiendo en la lista de manera horizontal
+             *
+             * @param Categoria parametro del tipo categoria
+             */
             override fun correcto(respuesta: Categoria) {
 
                 respuesta.categorias.forEach {
                     categorias.add(it)
                 }
-
-                //LLenar visualmente la lista de categorias
+                //Se llena la lista con las categorias de manera visual
                 var adaptador = Categoria_Adaptador(categorias, this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
                 rv_categorias.layoutManager = LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
                 rv_categorias.adapter = adaptador
 
             }
 
+            // este metodo recibe el mensaje de error al cargar las categorias y informa sobre el posible error
             override fun error(error: String) {
                 Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
             }
         })
 
-        // categorias.add("Hoteles")
-        // categorias.add("Restaurantes")
-
-        //COdigo para cerrar sesion
+        //Al realizar click en el Boton de salir cerramos sesion y retornamos al layout de login
         btn_salir.setOnClickListener {
             LoginManager.getInstance().logOut()
             val intent = Intent(this@MapaMapsActivity, LogginActivity::class.java)
@@ -146,28 +150,33 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     }
 
-
+    /**
+     * Este metodo nos va a cargar el mapa de google ademas que nos va a permitir pintar los puntos en el mapa
+     *
+     * @param GoogleMap recibe el mapa de google
+     */
     override fun onMapReady(googleMap: GoogleMap) {
-        //lmacenar en una variable para usar luego
+        //Variable que nos permite almacenar el mapa de google
         mMap = googleMap
+        //Parametro que nos permite dar click en los marcadores
         mMap!!.setOnMarkerClickListener(this)
+        //Parametro que nos permite dar click en la informacion de los marcadores
         mMap!!.setOnInfoWindowClickListener(this)
-
-
-        val ubicacion = LatLng(-4.0252113, -79.207801)
-
-
+        //variable provisional para almacenar una latitud y una longitud
+        val ubicacion = LatLng(-4.030588, -79.199514)
+        //Nos permite dar un acercamiento de camara cuando seleccionemos nuestra ubicacion
         mMap!!.moveCamera(CameraUpdateFactory.newLatLng(ubicacion))
-
-
-
+        /**
+         * Este metodo nos permite obtener todos los sitios y guardarlos en una lista
+         *
+         * @param CallbackApi recibe una lista de sitios
+         */
         retrofitApi!!.obtenerSitios(object : CallbackApi<List<Sitios>> {
-
+            //Si la respuesta al obtener los sitios es correcta agrega los sitios a la variable sitios
             override fun correcto(respuesta: List<Sitios>) {
-                //Los vamos a mostrar en el mapa
 
                 sitios.addAll(respuesta)
-
+                //Recorre los sitios y va marcando en el mapa segun la longitud y latitud de cada sitio
                 sitios.forEach {
                     val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
                     mMap!!.addMarker(MarkerOptions().position(ubicacionSitio)
@@ -175,54 +184,53 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                     )
                 }
 
-
             }
 
+            //marca error si no se pueden cargar la lista de los sitios correctamente
             override fun error(error: String) {
                 Toast.makeText(this@MapaMapsActivity, error, Toast.LENGTH_SHORT).show()
             }
         })
     }
 
+    /**
+     * Este metodo nos va a permitir filtrar por categoria al momento de dar click en alguna categoria nos permite filtrar que sitios pertenecen a la misma
+     *
+     * @param categoria recibe la categoria que se ha seleccionado para ser filtrada
+     */
     override fun filtrarPorCategoria(categoria: String) {
-        //esto filtra -> filter, dentro del cual va la confdicion con la cual quiero que se filttren mis elementos
-
+        //esta variable almacena los sitios que sean pertenecientes a la categoria que seleccionemos
         sitiosFiltrados = sitios.filter {
             it.categoria.equals(categoria)
         }
-
-        //limpiar el mapa y dibujar nuevamente los markers
+        //nos permite limpiar el mapa para volver a pintar los sitios segun la categoria seleccionada
         mMap!!.clear()
-
+        //Nos ubica en el mapa un indicador de todos los sitios que tenemos segun la categoria que hayamos seleccionado
         sitiosFiltrados!!.forEach {
             val ubicacionSitio = LatLng(it.latitud.toDouble(), it.longitud.toDouble())
             mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
 
         }
-
+        //este if nos permite conocer cual es el sitio mas cercano luego de posicionarnos en el mapa
         if (::mCurrentLocation.isInitialized) {
 
-            //Cambios
             var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
 
             marcadorUbicacion = mMap!!.addMarker(MarkerOptions().position(posicion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
                     .title("Mi posición"))
-
             sitiosFiltrados!!.sortedBy { it.distancia }
-
             tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
             tv_descripcion.text = sitiosFiltrados!![0].nombre
-
-            //Fin Cambio
         }
     }
 
-
+    //funcion por defecto para la localizacion
     private fun buildLocationSettingsRequest() {
         mLocationSettingsRequest = LocationSettingsRequest.Builder()
                 .addLocationRequest(locationRequest).build()
     }
 
+    //nos permite obtener la ubicacion del usuario, son metodos por defecto
     private fun createLocationCallback() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
@@ -238,43 +246,43 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
-
+    /**
+     * Este metodo nos va a permitir mostrar la ubicacion del usuario en el mapa
+     *
+     * @param mCurrentLocation nos va a recibir las cordenadas de donde se encientra el usuario
+     */
     private fun mostrarUbicacionMapa(mCurrentLocation: Location?) {
-
+        //en esta variable vamos a guardar la posicion del usuario y vamos a dirigirnos a donde se encuentra
         val cameraPosition = CameraPosition.Builder()
                 .target(com.google.android.gms.maps.model.LatLng(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude))
                 .zoom(14F)
                 .build()
-
-        //Cambio
+        //Este if nos permite controlar nos permite eliminar la posicion anterior
         if (marcadorUbicacion != null) {
             marcadorUbicacion!!.remove()
         }
-
+        //en esta variable cuardarmos la latitud y longitud de la ubicacion
         var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
 
         //Crear el marcador de mi ubicacion
         marcadorUbicacion = mMap!!.addMarker(MarkerOptions().position(posicion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
                 .title("Mi posición"))
-
-        //cambio
-
+        //Vamos a mover la posicion de la camara a donde se encuentra el usuario
         mMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-
-
+        //nos permite guarddar el sitio mas cercano del sujeto en una variable distancia
         if (sitiosFiltrados != null) {
 
             sitiosFiltrados!!.forEach {
                 val distancia = getDistance(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude, it.latitud.toDouble(), it.longitud.toDouble())
                 it.distancia = distancia
             }
-
+            //Presentamos el sitio mas cercano en las cajas de texto
             sitiosFiltrados!!.sortedBy { it.distancia }
 
             tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
             tv_descripcion.text = sitiosFiltrados!![0].nombre
 
-        } else {
+        } else {// si no tenemos sitio por categoria filtrado nos va a presentar de todos los sitios cual es el mas cercano
 
             sitios.forEach {
                 val distancia = getDistance(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude, it.latitud.toDouble(), it.longitud.toDouble())
@@ -290,6 +298,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     }
 
+    //Metodos por defecto que se encarga de obtener la ubicacion
     fun createLocationRequest() {
         locationRequest = LocationRequest().apply {
             interval = UPDATE_INTERVAL_IN_MILLISECONDS
@@ -299,6 +308,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     }
 
+    //metodos por defecto que se encargan de obtener la ubicacion
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
@@ -334,10 +344,12 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
                 }
     }
 
+    // metodo por defecto para detener la ubicacion
     private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
+    //metodo por defecto para obtener la ubicacion y solicitar los permisos
     fun getLocation() {
         if (checkPermissions()) {
             startLocationUpdates();
@@ -346,8 +358,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
-
-    /*Permisos*/
+    //Metodo que nos sirve para pedir los permisos de localizacion
     private fun requestPermissions() {
 
         val shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -360,12 +371,14 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
 
     }
 
+    // Metodo que nos permite verificar si ya tenemos los permisos
     private fun checkPermissions(): Boolean {
         var permissionState = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
+    // Metodo que nos permite saber la respuesta en el caso de aceptar o no los permisos
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.i("Mapas", "onRequestPermissionResult");
@@ -384,8 +397,7 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
-    /*Activity Result */
-
+    //Metoro que tambien permite destionar los permisos
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -409,7 +421,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
         }
     }
 
-
+    /**
+     * Este metodo nos va a permitir calcular la distancia mas corta entre dos punto en el cual se van a receptar las cordenadas del usuario junto con las del sitio que se desee comparar
+     *
+     * @param lat1 nos rercibe una latitud
+     * @param lon1 nos rercibe una longitud
+     * @param lat2 nos rercibe una latitud que usaremos para comparar
+     * @param lon2 nos rercibe una longitud que usaremos para comparar
+     * @return Double nos va a devolver un valor para saber cual es el sitio mas cercano
+     */
     fun getDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val R = 6371; // km
         val dLat = toRad(lat1 - lat2);
