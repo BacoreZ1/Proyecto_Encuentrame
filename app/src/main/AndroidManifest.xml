@@ -66,7 +66,10 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".DetalleSitioActivity"></activity>
+        <activity android:name=".DetalleSitioActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
     </application>
 
 </manifest>

@@ -22,7 +22,7 @@ class DetalleSitioActivity : AppCompatActivity() {
         tv_descripcion.text = sitio.descripcion
         supportActionBar!!.title= sitio.nombre
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-
+        //nos permite cargar la foto, recibe el link y en donde vamos a cargar
         Glide.with(this)
                 .load(sitio.foto)
                 .into(img_foto)
@@ -31,7 +31,7 @@ class DetalleSitioActivity : AppCompatActivity() {
     }
 //
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        //when swuit como n java
+
         when(item!!.itemId){
             //capturar evento de boton hacina atras
             android.R.id.home ->{

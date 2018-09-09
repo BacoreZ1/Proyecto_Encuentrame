@@ -123,11 +123,10 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
              * @param Categoria parametro del tipo categoria
              */
             override fun correcto(respuesta: Categoria) {
-
                 respuesta.categorias.forEach {
-                    categorias.add(it)
+                    categorias.add(it)//se añade las categorias a un array de categorias
                 }
-                //Se llena la lista con las categorias de manera visual
+                //Se llena la lista con las categorias de manera visual en un recicler view mediante un adaptador
                 var adaptador = Categoria_Adaptador(categorias, this@MapaMapsActivity) //creando adaptador con los iteq se realizcen
                 rv_categorias.layoutManager = LinearLayoutManager(this@MapaMapsActivity, LinearLayout.HORIZONTAL, false)
                 rv_categorias.adapter = adaptador
@@ -211,13 +210,15 @@ class MapaMapsActivity : AppCompatActivity(), OnMapReadyCallback, Categoria_Adap
             mMap!!.addMarker(MarkerOptions().position(ubicacionSitio).title(it.nombre))
 
         }
-        //este if nos permite conocer cual es el sitio mas cercano luego de posicionarnos en el mapa
+        //permite controlar si esque nos ubicamos primero para saber el sitoi mas cernado
         if (::mCurrentLocation.isInitialized) {
 
             var posicion = LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude)
 
             marcadorUbicacion = mMap!!.addMarker(MarkerOptions().position(posicion).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mi_posicion))
                     .title("Mi posición"))
+
+
             sitiosFiltrados!!.sortedBy { it.distancia }
             tv_title.text = sitiosFiltrados!![0].categoria + " cerca"
             tv_descripcion.text = sitiosFiltrados!![0].nombre
